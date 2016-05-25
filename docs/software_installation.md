@@ -28,7 +28,7 @@ Installation Instructions
 Overview
 ========
 
-These are the installation instructions taken from [http://software-carpentry.org/](Software-Carpentry) and how they layout their workshop [http://chendaniely.github.io/workshop-template-empty/](template). If you use the template, link, the directions are actually posted in there. The directions below are simply a reproduction of the same instructions.
+These are the installation instructions taken from [Software-Carpentry](http://software-carpentry.org/) and how they layout their workshop [template](http://chendaniely.github.io/workshop-template-empty/). If you use the template, link, the directions are actually posted in there. The directions below are simply a reproduction of the same instructions.
 
 The Bash Shell
 ==============
