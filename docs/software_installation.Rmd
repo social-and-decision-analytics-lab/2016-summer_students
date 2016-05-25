@@ -1,5 +1,5 @@
 ---
-title: "Installtion Instructions"
+title: "Installation Instructions"
 output: 
   github_document:
     toc: true

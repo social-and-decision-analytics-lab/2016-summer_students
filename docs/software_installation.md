@@ -1,4 +1,4 @@
-Installtion Instructions
+Installation Instructions
 ================
 
 -   [Overview](#overview)
