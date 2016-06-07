@@ -1,0 +1,304 @@
+---
+title: "Functions, Loops, and the Apply Family"
+output:
+  html_document: 
+    keep_md: yes
+    number_sections: yes
+    toc: yes
+  html_notebook: default
+---
+
+# Functions
+
+```
+your_function_name <- function() {
+    # stuff your function does
+}
+```
+
+```{r}
+my_function <- function(){
+    print("Hello World")
+}
+```
+
+```{r}
+my_function()
+```
+
+```{r}
+my_square <- function(some_number){
+    print(some_number)
+}
+```
+
+```{r, eval=FALSE}
+# will return an error because i didn't pass in a value
+my_square()
+```
+
+```{r}
+# will just print the value
+my_square(3)
+```
+
+```{r}
+# rewrite the function to actually calculate a square
+my_square <- function(some_number){
+    some_number ** 2
+}
+my_square(4)
+```
+
+```{r}
+my_square <- function(some_number){
+    # by default R funcitons will return the last thing it caluclated
+    return(some_number ** 2)
+}
+```
+
+```{r}
+my_square(4)
+```
+
+```{r}
+my_number_squared <- my_square(4)
+my_number_squared
+```
+
+```{r}
+my_adder <- function(thing1, thing2){
+    return(thing1 + thing2)
+}
+my_adder(4, 2)
+```
+
+```{r}
+my_adder_defualt <- function(thing1, thing2=10){
+    return(thing1 + thing2)
+}
+```
+
+```{r}
+my_adder_defualt(1)
+```
+
+```{r}
+my_adder_defualt(10, 15)
+```
+
+```{r}
+my_adder_defualt(thing1 = 10, thing2 = 15)
+```
+
+```{r}
+my_adder_defualt(thing2 = 15, thing1 = 10)
+```
+
+
+```{r}
+f_k <- function(temp){
+    return((temp - 32) * (5 / 9) + 273.15)
+}
+
+k_c <- function(temp){
+    return(temp - 273.15)
+}
+
+f_c <- function(temp){
+    temp_k <- f_k(temp)
+    result <- k_c(temp_k)
+    return(result)
+}
+```
+
+```{r}
+k_c(f_k(32))
+```
+
+
+# Apply Family
+
+## Apply
+```{r}
+mtcars
+```
+
+```{r}
+class(mtcars)
+```
+
+```{r}
+apply(X = mtcars, MARGIN = 2, FUN = sum)
+```
+
+```{r}
+applied_sum <- apply(X = mtcars, MARGIN = 2, FUN = sum, na.rm = TRUE)
+class(applied_sum)
+```
+
+```{r}
+apply(X = mtcars, MARGIN = 1, FUN = sum)
+```
+
+```{r}
+apply(mtcars, 1, sum)
+```
+
+```{r}
+messedup_mtcars <- mtcars
+messedup_mtcars$mpg_cyl <- messedup_mtcars$mpg + messedup_mtcars$cyl
+```
+
+```{r}
+#' calculate the mpg + cyl
+#' for each row of mtcars
+my_calculation <- function(x){
+    print(x)
+    print(class(x))
+    mpg_value <- x['mpg']
+    cyl_value <- x[2]
+    return(mpg_value + cyl_value)
+}
+```
+
+
+```{r}
+messedup_mtcars$appled_function <- apply(X = messedup_mtcars,
+                                         MARGIN = 1,
+                                         FUN = my_calculation)
+```
+
+## sapply lapply
+
+### lapply
+
+```{r}
+numbers <- c(1, 2, 3, 4, 5)
+class(numbers)
+```
+
+```{r}
+l <- lapply(X = numbers, FUN = my_adder_defualt)
+```
+```{r}
+class(l)
+```
+
+```{r}
+l[1]
+```
+
+```{r}
+class(l[1])
+```
+
+
+```{r}
+l[[1]]
+```
+
+```{r}
+class(l[[1]])
+```
+
+```{r}
+sapply(X = numbers, FUN = my_adder_defualt)
+```
+
+```{r}
+l <- lapply(X = mtcars[, c('mpg', 'cyl')], FUN = class)
+l[[1]]
+```
+
+# Loops
+
+```
+for(temp_variable in some_sequence){
+    do something
+}
+```
+
+```{r}
+for(number in c(1, 2, 3)){
+    print(number)
+}
+```
+
+```{r}
+for(number in c(1, 2, 3)){
+    print(my_adder_defualt(number))
+}
+```
+
+# parallelization
+
+```{r}
+library(foreach)
+```
+
+```{r}
+foreach(i = 1:3) %do% {
+    my_adder_defualt(i)
+}
+```
+
+```{r}
+foreach_loop_results <- foreach(i = 1:3) %do% {
+    return(my_adder_defualt(i))
+}
+```
+
+```{r}
+foreach_loop_results
+```
+
+```{r}
+foreach_loop_results <- foreach(i = 1:3) %dopar% {
+    return(my_adder_defualt(i))
+}
+```
+
+```{r}
+library(doParallel)
+```
+```{r}
+# make a cluster and specify number of cores to use
+cl <- makeCluster(4)
+registerDoParallel(cl)
+foreach_loop_results <- foreach(i = 1:3) %dopar% {
+    Sys.sleep(4)
+    return(my_adder_defualt(i))
+}
+stopCluster(cl)
+registerDoSEQ()
+```
+
+```{r}
+foreach_loop_results
+```
+
+```{r}
+seq(1, 10, 2)
+```
+
+# parallel apply family
+```{r}
+cl <- makeCluster(4)
+registerDoParallel(cl)
+
+parSapply(cl = cl, X = 1:4, FUN = my_adder_defualt)
+
+stopCluster(cl)
+registerDoSEQ()
+```
+
+
+http://dads2busy.github.io/2012/05/Parallel
+
+http://dads2busy.github.io/languages/R/
+
+```{r}
+source('mods.R')
+```
+
