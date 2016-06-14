@@ -1,0 +1,144 @@
+---
+title: "SQL in R"
+output: 
+  html_document: 
+    keep_md: yes
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Materials
+
+Where to find the materials:
+
+Reference/cheat sheet:
+
+- http://swcarpentry.github.io/sql-novice-survey/reference.html
+
+Software Carpentry Material (where the survey data comes from)
+
+- http://swcarpentry.github.io/sql-novice-survey/
+
+Aaron's material:
+
+- basic SQL: http://dads2busy.github.io/2012/05/SQL
+- SQL in R: http://dads2busy.github.io/2012/05/RPostgreSQLCommands
+- Using SQL and RPostgreSQL: http://dads2busy.github.io/2012/05/ConnectPostgreSQL
+
+```{r}
+library(RPostgreSQL)
+
+# disconnect all previous connections to the DB and create a new connection
+drv <- dbDriver("PostgreSQL")
+all_cons <- dbListConnections(drv)
+for (con in all_cons){dbDisconnect(con)}
+
+con <- dbConnect(drv,
+                 dbname="surveydata",
+                 host="localhost",
+                 port=5432,
+                 user="chend",
+                 password="chend")
+```
+
+# Selecting Data
+
+```{r}
+dbGetQuery(con, "SELECT * FROM person;")
+```
+
+```{r}
+df <- dbGetQuery(con, "SELECT * FROM person;")
+df
+
+dbGetQuery(con, "SELECT COUNT(*) FROM person;")
+
+dbGetQuery(con, "SELECT * FROM survey ORDER BY taken ASC, person DESC;")
+```
+
+# filtering data
+```{r}
+# filtering
+dbGetQuery(con, "SELECT * from visited WHERE site = 'DR-1';")
+
+dbGetQuery(con, "SELECT ident FROM visited WHERE site = 'DR-1';")
+
+dbGetQuery(con, "SELECT * FROM visited WHERE site = 'DR-1' AND dated < '1930-01-01'")
+
+dbGetQuery(con, "SELECT * FROM survey WHERE person = 'lake' OR person = 'roe'")
+
+dbGetQuery(con, "SELECT * FROM sUrVeY WHERE person IN ('lake', 'roe')")
+
+# make a new calculation
+dbGetQuery(con, "SELECT 1.05*reading FROM survey WHERE quant = 'rad';")
+# round
+# sum
+# avg/ mean
+
+dbGetQuery(con, "SELECT * FROM visited;")
+
+dbGetQuery(con, "SELECT * FROM visited WHERE dated < '1930-01-01';")
+
+dbGetQuery(con, "SELECT * FROM visited WHERE dated IS NULL")
+
+dbGetQuery(con, "SELECT *
+                 FROM visited
+                 WHERE dated IS NOT NULL")
+
+# paste0
+# paste
+# sprintf
+q <- "SELECT * FROM visited WHERE dated IS NOT NULL LIMIT 1;"
+dbGetQuery(con, q)
+
+
+q <- sprintf('SELECT * FROM %s WHERE dated IS NOT NULL %s;',
+             'visited',
+             'LIMIT 1')
+dbGetQuery(con, q)
+
+```
+
+# Combining tables
+```{r}
+dbGetQuery(con,
+           "SELECT site.lat, site.long, visited.dated
+           FROM site
+           JOIN visited
+           ON site.name = visited.site")
+
+
+dbGetQuery(con,
+           "SELECT s.lat, s.long, v.dated
+           FROM site as s
+           JOIN visited as v
+           ON s.name = v.site")
+
+q <- "SELECT site.lat, visited.dated
+FROM site
+JOIN visited
+ON   site.name=visited.site;" 
+dbGetQuery(con, q)
+
+
+# join 3 tables and filter on non-NULL values
+q <- "SELECT site.lat, site.long, visited.dated, survey.quant, survey.reading
+FROM site
+JOIN visited
+ON   site.name = visited.site
+JOIN survey
+ON  visited.ident = survey.taken
+WHERE visited.dated IS NOT NULL;"
+dbGetQuery(con, q)
+```
+
+# Write dataframe back to database
+```{r}
+# write a df to the db
+# dbWriteTable(con,"newTable",dframe)
+
+```
+
